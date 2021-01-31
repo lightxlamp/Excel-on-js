@@ -38,6 +38,22 @@ const webpackConfig = {
     // https://webpack.js.org/plugins/copy-webpack-plugin/
     // https://www.npmjs.com/package/clean-webpack-plugin - By default, this plugin will remove all files inside webpack's output.path directory, as well as all unused webpack assets after every successful rebuild.
     // https://webpack.js.org/plugins/mini-css-extract-plugin/
+    ,
+    module: {
+        rules: [
+          {
+            test: /\.s[ac]ss$/i,
+            use: [
+              // Creates `style` nodes from JS strings
+              "style-loader",
+              // Translates CSS into CommonJS
+              "css-loader",
+              // Compiles Sass to CSS
+              "sass-loader",
+            ],
+          },
+        ],
+    },
 }
 
 module.exports = webpackConfig;
