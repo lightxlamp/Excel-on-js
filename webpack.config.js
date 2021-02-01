@@ -4,12 +4,21 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require("copy-webpack-plugin");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
+const isProd = process.env.NODE_ENV === 'production';
+const isDev = !isProd;
+
+// console.log('process.env', process.env); // https://nodejs.org/api/process.html#process_process_env
+console.log('isProd', isProd);
+console.log('isDev', isDev);
+
+const filename = (ext) => isDev ? `bundle.${ext}` : `bundle.[hash].${ext}`;
+
 const webpackConfig = {
     context: path.resolve(__dirname, 'src'), // folder for all sources
     mode: 'development',
     entry: './index.js',
     output: {
-        filename: 'bundle.[hash].js',
+        filename: filename('js'),
         path: path.resolve(__dirname, 'dist')
     },
     resolve: {
@@ -19,10 +28,16 @@ const webpackConfig = {
             '@core': path.resolve(__dirname, 'src/core') // import '../../../core/Component' -> '@core/Component'
         }
     },
+    devtool: isDev ? 'source-map': false,
+    devServer: {
+        port: 1200,
+        hot: isDev
+    },
     plugins: [
         new CleanWebpackPlugin(),
         new HtmlWebpackPlugin({
-            template: 'index.html' // don't need to set "src/index", because of mentioned 'context'
+            template: 'index.html', // don't need to set "src/index", because of mentioned 'context'
+            minify: false
         }),
         new CopyPlugin({ // to move favicon
             patterns: [
@@ -31,7 +46,7 @@ const webpackConfig = {
             ],
         }),
         new MiniCssExtractPlugin({
-            filename: 'bundle.[hash].css'
+            filename: filename('css')
         })
     ]
     // https://webpack.js.org/plugins/html-webpack-plugin/
@@ -45,13 +60,24 @@ const webpackConfig = {
             test: /\.s[ac]ss$/i,
             use: [
               // Creates `style` nodes from JS strings
-              "style-loader",
+              // "style-loader",
+              MiniCssExtractPlugin.loader,
               // Translates CSS into CommonJS
               "css-loader",
               // Compiles Sass to CSS
               "sass-loader",
             ],
           },
+          {
+            test: /\.m?js$/,
+            exclude: /(node_modules|bower_components)/,
+            use: {
+              loader: 'babel-loader',
+              options: {
+                presets: ['@babel/preset-env']
+              }
+            }
+          }
         ],
     },
 }
